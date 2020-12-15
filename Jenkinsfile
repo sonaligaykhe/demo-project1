@@ -1,26 +1,27 @@
 pipeline{
+
     agent any
+
     stages{
-        stage("Git SCM"){
+       stage("SCM Checkout"){
             steps{
-                git 'https://github.com/dgp999/declarativepipe.git'
+                git 'https://github.com/sonaligaykhe/demo-project1.git'
+                echo "************SCM Checkout Successful***********"
             }
         }
-        stage("Maven Build"){
+        stage("Build"){
             steps{
                 sh "mvn clean package"
                 sh "mv target/*.war target/myweb.war"
+                echo "************Build Successful***********"
             }
         }
         stage("Deploy"){
             steps{
-			    sshagent(['TomcatServer']){
-			        sh """
-			        scp -o StrictHostKeyChecking=no target/myweb.war ec2-user@172.31.6.240:/opt/tomcat9/webapps/'
-                    ssh ec2-user@172.31.6.240 /opt/tomcat9/bin ./shutdown.sh
-                    ssh ec2-user@172.31.6.240 /opt/tomcat9/bin ./startup.sh
-                    """
-			    }
+                sshagent(['tomcat_deploy']) {
+                    sh "scp -o StrictHostKeyChecking=no target/myweb.war ec2-user@13.127.126.153:/opt/apache-tomcat-8.5.61/webapps"
+                    echo "************Deployment Successful***********"
+                }
             }
         }
     }
